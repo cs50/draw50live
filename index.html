@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+
+		<link rel="stylesheet" href="style.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/hammerjs/2.0.8/hammer.min.js"></script>
+
+
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+		<script>
+			var paintColor = "white";
+			var strokeSize = 3;
+
+			const changeColor = (color) => {
+				paintColor = color;
+			}
+
+			const increaseSize = () => {
+				strokeSize++;
+				updateStrokeSize();
+			}
+
+			const decreaseSize = () => {
+				if (strokeSize < 2) {
+					return;
+				}
+				strokeSize--;
+				updateStrokeSize();
+			}
+
+			const updateStrokeSize = () => {
+				$("#strokeSize").html(strokeSize);
+			}
+
+			// when document ready
+			$(document).ready(function(){
+
+				updateStrokeSize();
+
+				var mc = new Hammer(document.getElementById('draw'));
+				paper.setup(document.getElementById('draw'));
+				
+				// handle touch input
+				mc.on("hammer.input", function(ev) {
+				   // console.log(ev);
+
+				   if (ev.isFirst) {
+				   		// start
+				   		if (ev.srcEvent.shiftKey) {
+				   			// color matches background (essentially erase)
+				   			startDraw(ev, "black", strokeSize * 4, "destination-out");
+				   		} else {
+				   			// draw
+				   			startDraw(ev);
+				   		}
+				   } else if (ev.isFinal) {
+				   		// last
+				   		endDraw(ev);
+				   } else {
+				   		// middle
+				   		middleDraw(ev);
+				   }
+
+				});
+
+				// handle startDraw
+				const startDraw = (ev, strokeColor = paintColor, strokeWidth = strokeSize, blendMode = "normal") => {
+					console.log("Start Draw!!", ev.center.x, ev.center.y);
+					var path = new paper.Path({
+						strokeColor: strokeColor,
+						strokeWidth: strokeWidth,
+						strokeCap: "round",
+						blendMode: blendMode
+					});
+				}
+
+				// handle middleDraw
+				const middleDraw = (ev) => {
+					console.log("Middle Draw!!", ev.center.x, ev.center.y);
+					paper.project._activeLayer.lastChild.add({x: ev.center.x, y: ev.center.y})
+				}
+
+				// handle endDraw
+				const endDraw = (ev) => {
+					console.log("End Draw!!", ev.center.x, ev.center.y);
+					paper.project._activeLayer.lastChild.simplify(20)
+				}
+
+
+
+
+
+
+			});
+				
+		</script>
+
+	</head>
+
+	<body>
+
+		<canvas id="draw">
+
+		</canvas>
+		<div id="menu">
+			<button class="menuButton red" onclick="changeColor('red');"></button>
+			<button class="menuButton white" onclick="changeColor('white');"></button>
+			<button class="menuButton blue" onclick="changeColor('blue');"></button>
+			<button class="menuButton plusMinus" onclick="increaseSize();">+</button>
+			<span class="menuButton" id="strokeSize">3</span>
+			<button class="menuButton plusMinus" onclick="decreaseSize();">-</button>
+
+		</div>
+		<script src="js/paper-full.min.js"></script>
+	</body>
+</html>
